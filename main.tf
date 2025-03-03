@@ -1,5 +1,7 @@
 module "vpc_module" {
   source = "./vpc"
+  vpc_owner = var.vpc_owner
+  vpc_use = var.vpc_use
 }
 
 resource "aws_instance" "jenkins" {
@@ -9,7 +11,7 @@ resource "aws_instance" "jenkins" {
   key_name = var.key_name
   security_groups = [aws_security_group.jenkins-sg.id]
 
-  user_data = file("install-jenkins.sh")
+  user_data = file("./scripts/install-jenkins.sh")
   
   tags = {
     Name = each.key

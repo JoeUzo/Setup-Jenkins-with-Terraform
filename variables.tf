@@ -12,3 +12,13 @@ variable "key_name" {
   type = string
   default = "my-key"
 }
+
+variable "vpc_owner" {
+  description = "The owner of the VPC"
+  type        = string
+}
+
+variable "vpc_use" {
+  description = "The purpose of the VPC"
+  type        = string
+}
