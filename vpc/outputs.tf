@@ -1,6 +1,6 @@
 output "vpc_id" {
   description = "value of the VPC ID"
-  value = module.vpc.vpc_id
+  value       = module.vpc.vpc_id
 }
 
 output "vpc_cidr_block" {

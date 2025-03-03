@@ -4,3 +4,5 @@ terraform.tfvars
 *.tfvars
 terraform/
 output.json
+.terraform/
+.terraform.lock.hcl

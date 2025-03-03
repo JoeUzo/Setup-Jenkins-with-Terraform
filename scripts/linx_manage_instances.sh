@@ -4,6 +4,7 @@
 INSTANCE_IDS=$(jq -r '.instance_ids.value[]' output.json)
 REGION=$(jq -r '.region.value' output.json)
 
+echo "Instance IDs: $INSTANCE_IDS"
 # Action: "start" or "stop"
 ACTION=$1
 

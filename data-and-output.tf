@@ -2,23 +2,23 @@
 # DATA
 ############################################
 
-data "aws_ami" "ubuntu" {
-    most_recent = true
-    
-    filter {
-        name   = "name"
-        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-24.04-amd64-server-*"]
-    }
-    
-    filter {
-        name   = "virtualization-type"
-        values = ["hvm"]
-    }
+data "aws_ami" "ubuntu_ami" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
 
-    filter {
-      name = "architecture"
-      values = ["x86_64"]
-    }   
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
 }
 
 
@@ -27,7 +27,7 @@ data "aws_ami" "ubuntu" {
 ############################################
 
 output "instance_ids" {
-  value = [for instance in aws_instance.my-ec2 : instance.id]
+  value = aws_instance.jenkins.id
 }
 
 # Output for the AWS region

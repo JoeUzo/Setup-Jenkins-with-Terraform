@@ -18,25 +18,15 @@ variable "vpc_use" {
   default = "test"
 }
 
-variable "vpc_name" {
-  type = string
-  default = "vpc-name"
-}
-
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.0.0.0/16"
 }
 
-variable "vpc_azs" {
+variable "vpc_availability_zones" {
   type    = list(string)
   default = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  
-}
 
-variable "vpc_azs" {
-  type    = list(string)
-  default = ["us-east-2a", "us-east-2b", "us-east-2c"]
 }
 
 variable "vpc_public_subnets" {
