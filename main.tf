@@ -28,7 +28,8 @@ resource "aws_instance" "jenkins" {
   lifecycle {
     ignore_changes = [
       associate_public_ip_address,
-      security_groups
+      security_groups,
+      ami
     ]
   }
 }
