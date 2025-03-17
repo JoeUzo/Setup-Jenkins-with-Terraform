@@ -25,7 +25,45 @@ variable "associate_pub_ip_address" {
   default     = true
 }
 
+#########################################
+# JENKINS NODE/SLAVE
+#########################################
 
+variable "create_jenkins_node" {
+  description = "Whether to create a Jenkins node/slave EC2 instance"
+  type        = bool
+  default     = false
+}
+
+variable "jenkins_node_instance_type" {
+  description = "The instance type for the Jenkins node/slave"
+  type        = string
+  default     = "t3.large"  # Suitable for running Terraform and AWS CLI
+}
+
+variable "jenkins_node_name" {
+  description = "The name of the Jenkins node/slave EC2 instance"
+  type        = string
+  default     = "Jenkins-Node"
+}
+
+variable "jenkins_node_ami" {
+  description = "The AMI ID for the Jenkins node/slave (if not specified, will use the same as the master)"
+  type        = string
+  default     = ""  # Empty means use the same AMI as the Jenkins master
+}
+
+variable "use_aws_linux_ami" {
+  description = "Whether to use Amazon Linux 2 AMI instead of Ubuntu for the Jenkins node"
+  type        = bool
+  default     = false
+}
+
+variable "install_terraform_aws" {
+  description = "Whether to install Terraform and AWS CLI on the Jenkins node"
+  type        = bool
+  default     = true
+}
 
 #########################################
 #VPC MODULE
