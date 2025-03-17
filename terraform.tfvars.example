@@ -1,0 +1,25 @@
+# Region
+my_region = "us-east-1"
+
+# EC2 Instance
+instance_type            = "t2.large"
+key_name                 = "my-key"
+my_ec2_name              = "Jenkins"
+associate_pub_ip_address = true
+
+# VPC
+vpc_owner              = "YourName"
+vpc_use                = "Jenkins"
+vpc_cidr               = "10.0.0.0/16"
+vpc_availability_zones = ["us-east-1a", "us-east-1b"]
+vpc_public_subnets     = ["10.0.1.0/24", "10.0.2.0/24"]
+vpc_private_subnets    = ["10.0.11.0/24", "10.0.12.0/24"]
+vpc_enable_nat_gateway = true
+vpc_single_nat_gateway = true
+
+# IAM - Existing Policies
+# Example: Attach existing IAM policies to the Jenkins instance role
+# existing_iam_policy_arns = [
+#   "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
+#   "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+# ] 

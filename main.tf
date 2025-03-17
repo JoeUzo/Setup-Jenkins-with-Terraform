@@ -18,6 +18,7 @@ resource "aws_instance" "jenkins" {
   instance_type               = var.instance_type
   key_name                    = var.key_name
   security_groups             = [aws_security_group.jenkins-sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.jenkins_profile.name
 
   user_data = file("scripts/install_jenkins.sh")
 

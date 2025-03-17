@@ -66,3 +66,10 @@ variable "vpc_single_nat_gateway" {
   description = "Enable only single NAT Gateway in one Availability Zone to save costs during our demos"
   type        = bool
 }
+
+#########################################
+# IAM MODULE
+#########################################
+
+# Note: The following variable is defined in iam.tf:
+# - existing_iam_policy_arns: List of existing IAM policy ARNs to attach to the Jenkins instance role

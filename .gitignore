@@ -6,3 +6,4 @@ terraform/
 output.json
 .terraform/
 .terraform.lock.hcl
+bash.exe.stackdump

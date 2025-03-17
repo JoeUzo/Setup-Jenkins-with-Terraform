@@ -34,3 +34,13 @@ output "instance_ids" {
 output "region" {
   value = var.my_region
 }
+
+# Output for the IAM role
+output "jenkins_role_name" {
+  value = aws_iam_role.jenkins_role.name
+}
+
+# Output for the IAM instance profile
+output "jenkins_instance_profile_name" {
+  value = aws_iam_instance_profile.jenkins_profile.name
+}
