@@ -50,28 +50,30 @@ output "region" {
   value = var.my_region
 }
 
-# Output for the IAM role
-output "jenkins_role_name" {
-  value = aws_iam_role.jenkins_role.name
+# Output for the Jenkins Master IAM instance profile (if any)
+output "jenkins_master_instance_profile" {
+  value       = var.jenkins_master_iam_role_name != "" ? aws_iam_instance_profile.jenkins_master_profile[0].name : "No IAM profile attached"
+  description = "The IAM instance profile attached to the Jenkins master"
 }
 
-# Output for the IAM instance profile
-output "jenkins_instance_profile_name" {
-  value = aws_iam_instance_profile.jenkins_profile.name
+# Output for the Jenkins Node IAM instance profile (if any)
+output "jenkins_node_instance_profile" {
+  value       = var.jenkins_node_iam_role_name != "" && var.create_jenkins_node ? aws_iam_instance_profile.jenkins_node_profile[0].name : "No IAM profile attached or no node created"
+  description = "The IAM instance profile attached to the Jenkins node (if created)"
 }
 
-# Outputs for the Jenkins node (if created)
-output "jenkins_node_id" {
-  value       = var.create_jenkins_node ? aws_instance.jenkins_node[0].id : null
-  description = "The ID of the Jenkins node EC2 instance (if created)"
+# Outputs for the Jenkins nodes (if created)
+output "jenkins_node_ids" {
+  value       = var.create_jenkins_node ? aws_instance.jenkins_node[*].id : []
+  description = "The IDs of the Jenkins node EC2 instances (if created)"
 }
 
-output "jenkins_node_public_ip" {
-  value       = var.create_jenkins_node ? aws_instance.jenkins_node[0].public_ip : null
-  description = "The public IP of the Jenkins node EC2 instance (if created)"
+output "jenkins_node_public_ips" {
+  value       = var.create_jenkins_node ? aws_instance.jenkins_node[*].public_ip : []
+  description = "The public IPs of the Jenkins node EC2 instances (if created)"
 }
 
-output "jenkins_node_private_ip" {
-  value       = var.create_jenkins_node ? aws_instance.jenkins_node[0].private_ip : null
-  description = "The private IP of the Jenkins node EC2 instance (if created)"
+output "jenkins_node_private_ips" {
+  value       = var.create_jenkins_node ? aws_instance.jenkins_node[*].private_ip : []
+  description = "The private IPs of the Jenkins node EC2 instances (if created)"
 }

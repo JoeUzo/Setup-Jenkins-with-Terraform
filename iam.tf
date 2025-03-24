@@ -1,45 +1,30 @@
 ############################################
-# IAM Resources for Jenkins EC2 Instance
+# IAM Resources for Jenkins EC2 Instances
 ############################################
 
-# Create an IAM role for the Jenkins EC2 instance
-resource "aws_iam_role" "jenkins_role" {
-  name = "jenkins-instance-role"
-  
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "jenkins-role"
-  }
+# Variables for existing IAM roles
+variable "jenkins_master_iam_role_name" {
+  description = "Name of an existing IAM role to attach to the Jenkins master instance"
+  type        = string
+  default     = ""
 }
 
-# Create a variable for existing IAM policies to attach
-variable "existing_iam_policy_arns" {
-  description = "List of existing IAM policy ARNs to attach to the Jenkins instance role"
-  type        = list(string)
-  default     = []
+variable "jenkins_node_iam_role_name" {
+  description = "Name of an existing IAM role to attach to the Jenkins node instance"
+  type        = string
+  default     = ""
 }
 
-# Attach existing policies if provided
-resource "aws_iam_role_policy_attachment" "existing_policies" {
-  count      = length(var.existing_iam_policy_arns)
-  role       = aws_iam_role.jenkins_role.name
-  policy_arn = var.existing_iam_policy_arns[count.index]
+# Create instance profile for Jenkins master using the existing role
+resource "aws_iam_instance_profile" "jenkins_master_profile" {
+  count = var.jenkins_master_iam_role_name != "" ? 1 : 0
+  name  = "jenkins-master-profile"
+  role  = var.jenkins_master_iam_role_name
 }
 
-# Create an instance profile for the Jenkins EC2 instance
-resource "aws_iam_instance_profile" "jenkins_profile" {
-  name = "jenkins-instance-profile"
-  role = aws_iam_role.jenkins_role.name
+# Create instance profile for Jenkins node using the existing role
+resource "aws_iam_instance_profile" "jenkins_node_profile" {
+  count = var.jenkins_node_iam_role_name != "" && var.create_jenkins_node ? 1 : 0
+  name  = "jenkins-node-profile"
+  role  = var.jenkins_node_iam_role_name
 } 

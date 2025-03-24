@@ -18,7 +18,7 @@ resource "aws_instance" "jenkins" {
   instance_type               = var.instance_type
   key_name                    = var.key_name
   security_groups             = [aws_security_group.jenkins-sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.jenkins_profile.name
+  iam_instance_profile        = var.jenkins_master_iam_role_name != "" ? aws_iam_instance_profile.jenkins_master_profile[0].name : null
 
   user_data = file("scripts/install_jenkins.sh")
 
@@ -37,7 +37,7 @@ resource "aws_instance" "jenkins" {
 
 # Jenkins Node/Slave EC2 Instance (conditionally created)
 resource "aws_instance" "jenkins_node" {
-  count = var.create_jenkins_node ? 1 : 0
+  count = var.create_jenkins_node ? var.jenkins_node_count : 0
 
   # Use Amazon Linux 2 AMI if specified, otherwise use the specified AMI or default to Ubuntu
   ami = var.use_aws_linux_ami ? data.aws_ami.amazon_linux_2.id : (
@@ -49,7 +49,7 @@ resource "aws_instance" "jenkins_node" {
   instance_type               = var.jenkins_node_instance_type
   key_name                    = var.key_name
   security_groups             = [aws_security_group.jenkins-sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.jenkins_profile.name
+  iam_instance_profile        = var.jenkins_node_iam_role_name != "" ? aws_iam_instance_profile.jenkins_node_profile[0].name : null
 
   # Use the appropriate installation script based on the AMI
   user_data = var.install_terraform_aws ? (
@@ -57,7 +57,7 @@ resource "aws_instance" "jenkins_node" {
   ) : ""
 
   tags = {
-    Name = var.jenkins_node_name
+    Name = "${var.jenkins_node_name}-${count.index + 1}"
   }
 
   lifecycle {

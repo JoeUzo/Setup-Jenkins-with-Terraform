@@ -25,6 +25,9 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 chmod +x kubectl
 mv kubectl /usr/local/bin/
 
+# Install Helm (for Kubernetes package management)
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
 # Install eksctl (for EKS management)
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 mv /tmp/eksctl /usr/local/bin
@@ -55,4 +58,4 @@ alias tfd='terraform destroy'
 alias tfi='terraform init'
 EOF
 
-echo "Terraform, AWS CLI, and Jenkins agent setup completed!" 
+echo "Terraform, AWS CLI, Helm, and Jenkins agent setup completed!" 

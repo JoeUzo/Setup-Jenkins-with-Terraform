@@ -35,6 +35,12 @@ variable "create_jenkins_node" {
   default     = false
 }
 
+variable "jenkins_node_count" {
+  description = "Number of Jenkins nodes to create (only applies if create_jenkins_node is true)"
+  type        = number
+  default     = 1
+}
+
 variable "jenkins_node_instance_type" {
   description = "The instance type for the Jenkins node/slave"
   type        = string
@@ -109,5 +115,6 @@ variable "vpc_single_nat_gateway" {
 # IAM MODULE
 #########################################
 
-# Note: The following variable is defined in iam.tf:
-# - existing_iam_policy_arns: List of existing IAM policy ARNs to attach to the Jenkins instance role
+# Note: The following variables are defined in iam.tf:
+# - jenkins_master_iam_role_name: Name of an existing IAM role to attach to the Jenkins master
+# - jenkins_node_iam_role_name: Name of an existing IAM role to attach to the Jenkins node
