@@ -1,98 +1,157 @@
+# Jenkins on AWS with Terraform
 
-# Setup Jenkins with Terraform
-
-This repository provides Terraform code to provision a fully functional Jenkins server on AWS using EC2 and a dedicated VPC. The setup leverages Terraform modules for a modular, scalable, and reproducible infrastructure deployment.
+This Terraform configuration creates a Jenkins server on AWS EC2 with optional node/agent instances. The setup includes a custom VPC, security groups, and optional IAM roles.
 
 ## Features
 
-- **Jenkins on AWS EC2:** Automatically installs and configures Jenkins on an Ubuntu EC2 instance.
-- **Custom VPC Setup:** Uses a Terraform module in the `vpc/` subfolder to create a VPC with public and private subnets.
-- **Security Groups:** Configures security groups to allow necessary traffic for Jenkins (port 8080 for the web UI, port 50000 for agent communications, and SSH on port 22).
-- **Modular & Maintainable:** Splits infrastructure into reusable modules for easier maintenance and upgrades.
-- **Remote State Support:** Option to use remote state management (e.g., S3 backend) for state locking and consistency.
+- **Jenkins Master Server**: Automatically installs and configures Jenkins on an Ubuntu EC2 instance
+- **Optional Jenkins Nodes**: Create multiple Jenkins agent nodes to distribute build jobs
+- **Custom VPC Setup**: Creates a VPC with public and private subnets
+- **IAM Role Integration**: Use existing IAM roles for your instances
+- **Multiple OS Options**: Choose between Ubuntu or Amazon Linux 2 for the nodes
+- **EKS Management Tools**: Nodes come pre-installed with Terraform, AWS CLI, kubectl, Helm, and other tools for managing EKS clusters
 
 ## Prerequisites
 
 - **Terraform** version 1.9 or later
 - An active **AWS account** with permissions to create EC2 instances, VPCs, and associated resources
 - AWS CLI installed and configured with your credentials
-- Basic knowledge of AWS, Jenkins, and Terraform
+- SSH key pair in AWS for connecting to instances
 
-## Repository Structure
+## Usage
 
+### 1. Configure Your Variables
+
+Create a `terraform.tfvars` file based on the example provided:
+
+```hcl
+# Region
+my_region = "us-east-1"
+
+# EC2 Instance
+instance_type            = "t2.large"
+key_name                 = "your-key-name"
+my_ec2_name              = "Jenkins"
+associate_pub_ip_address = true
+
+# Jenkins Node/Slave Configuration
+create_jenkins_node        = true   # Set to true to create Jenkins nodes
+jenkins_node_count         = 2      # Number of Jenkins nodes to create
+jenkins_node_instance_type = "t3.large"
+jenkins_node_name          = "Jenkins-Node"
+use_aws_linux_ami          = false  # Set to true to use Amazon Linux 2 instead of Ubuntu
+install_terraform_aws      = true   # Set to true to install Terraform, AWS CLI, Helm, etc.
+
+# VPC
+vpc_owner              = "YourName"
+vpc_use                = "Jenkins"
+vpc_cidr               = "10.0.0.0/16"
+vpc_availability_zones = ["us-east-1a", "us-east-1b"]
+vpc_public_subnets     = ["10.0.1.0/24", "10.0.2.0/24"]
+vpc_private_subnets    = ["10.0.11.0/24", "10.0.12.0/24"]
+vpc_enable_nat_gateway = true
+vpc_single_nat_gateway = true
+
+# IAM - Existing Role Names (optional)
+jenkins_master_iam_role_name = "your-existing-jenkins-master-role"
+jenkins_node_iam_role_name = "your-existing-jenkins-node-role"
 ```
-.
-├── main.tf             # Main Terraform configuration for the Jenkins EC2 instance
-├── outputs.tf          # Outputs for the Jenkins instance (ID, public IP)
-├── variables.tf        # Variable definitions for configuration
-├── terraform.tfvars    # Example variable values (do not commit sensitive info)
-└── vpc/                # Subfolder containing the VPC module configuration
-    ├── main.tf         # VPC module code to set up networking resources
-    └── outputs.tf      # VPC outputs (e.g., VPC ID, subnet IDs)
-```
 
-## Getting Started
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/JoeUzo/Setup-Jenkins-with-Terraform.git
-cd Setup-Jenkins-with-Terraform
-```
-
-### 2. Configure Your Environment
-
-- Update `terraform.tfvars` with your specific AWS region, VPC settings, and other parameters.
-- If using a remote backend for state management, update the backend configuration accordingly.
-
-### 3. Initialize Terraform
+### 2. Initialize and Apply
 
 ```bash
 terraform init
-```
-
-### 4. Preview the Infrastructure Changes
-
-```bash
 terraform plan
+terraform apply
 ```
 
-### 5. Deploy the Infrastructure
+### 3. Accessing Jenkins
+
+After the infrastructure is created, Terraform will output the following:
+
+- **Jenkins URL**: The URL to access the Jenkins web UI
+- **SSH Commands**: Commands to SSH into the Jenkins master and node instances
+- **IP Addresses**: Public and private IPs of all instances
+
+The Jenkins initial admin password can be found on the server by running:
 
 ```bash
-terraform apply -auto-approve
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
 
-## Jenkins Configuration
+### 4. Configuring Jenkins Nodes
 
-The EC2 instance user data script is tailored for Ubuntu:
+To add the created nodes to your Jenkins master:
 
-- Updates the system packages.
-- Installs OpenJDK 11 (a prerequisite for Jenkins).
-- Adds the official Jenkins repository.
-- Installs and starts Jenkins.
-- Prints the initial admin password to help you complete the Jenkins setup via the web UI.
+1. Navigate to "Manage Jenkins" > "Manage Nodes and Clouds" > "New Node"
+2. Enter a name for the node and select "Permanent Agent"
+3. Configure the node with the following settings:
+   - **Remote root directory**: `/home/ubuntu/jenkins-agent` (or `/home/ec2-user/jenkins-agent` for Amazon Linux)
+   - **Launch method**: Launch agent via SSH
+   - **Host**: Use the private IP of the node
+   - **Credentials**: Add SSH credentials with your private key
+   - **Host Key Verification Strategy**: Non-verifying
 
-Once deployed, access Jenkins at `http://<EC2_PUBLIC_IP>:8080`.
+## Managing EKS Clusters
+
+The Jenkins nodes come pre-installed with the following tools:
+
+- **Terraform**: For infrastructure as code
+- **AWS CLI**: For AWS resource management
+- **kubectl**: For Kubernetes cluster management
+- **Helm**: For Kubernetes package management
+- **eksctl**: For EKS-specific operations
+
+To create an EKS cluster using Terraform:
+
+1. SSH into one of the Jenkins nodes
+2. Create a Terraform configuration for your EKS cluster
+3. Run the standard Terraform workflow (init, plan, apply)
+4. Use `aws eks update-kubeconfig` to configure kubectl to interact with your cluster
 
 ## Customization
 
-- **EC2 Instance:** Adjust the AMI ID, instance type, and key name in `main.tf` to match your requirements.
-- **User Data Script:** Modify the installation script if you need a different Jenkins version or custom configuration.
-- **VPC Module:** Tweak the VPC settings (e.g., CIDR, subnets, NAT gateway options) in the `vpc/` folder.
+### IAM Roles
+
+This configuration doesn't create IAM roles but allows you to attach existing roles:
+
+1. Create IAM roles in AWS with the permissions you need
+2. Specify the role names in your `terraform.tfvars` file
+
+### Multiple Nodes
+
+You can create multiple Jenkins nodes with identical configuration:
+
+1. Set `create_jenkins_node = true`
+2. Set `jenkins_node_count` to the number of nodes you want
+3. Nodes will be named sequentially (e.g., Jenkins-Node-1, Jenkins-Node-2)
+
+### Operating System
+
+For Jenkins nodes, you can choose between:
+
+- **Ubuntu** (default): Set `use_aws_linux_ami = false`
+- **Amazon Linux 2**: Set `use_aws_linux_ami = true`
+
+## Outputs
+
+After running `terraform apply`, you'll see outputs including:
+
+- Jenkins master details (ID, IP addresses, URL)
+- SSH commands to connect to all instances
+- Jenkins nodes details (if created)
+- IAM instance profile information (if applicable)
 
 ## Security Considerations
 
-- **State Files:** Ensure that your Terraform state files (especially if containing sensitive outputs) are stored securely. Use remote backends with proper access control.
-- **Security Groups:** Customize the security group rules to restrict access to your instance as needed. Avoid opening ports globally unless necessary.
-
-## Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests to enhance this setup.
+- The security group allows traffic on ports 22 (SSH), 80 (HTTP), 8080 (Jenkins), and 50000 (Jenkins agents)
+- For production use, consider restricting these ports to specific IPs
+- Use IAM roles with the principle of least privilege
+- Regularly update the instances and Jenkins for security patches
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
 
 ## Contact
 

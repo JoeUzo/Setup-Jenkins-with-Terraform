@@ -41,8 +41,35 @@ data "aws_ami" "amazon_linux_2" {
 # OUTPUTS
 ############################################
 
-output "instance_ids" {
-  value = aws_instance.jenkins.id
+# Jenkins Master Outputs
+output "jenkins_master_id" {
+  value       = aws_instance.jenkins.id
+  description = "The ID of the Jenkins master EC2 instance"
+}
+
+output "jenkins_master_public_ip" {
+  value       = aws_instance.jenkins.public_ip
+  description = "The public IP of the Jenkins master EC2 instance"
+}
+
+output "jenkins_master_private_ip" {
+  value       = aws_instance.jenkins.private_ip
+  description = "The private IP of the Jenkins master EC2 instance"
+}
+
+output "jenkins_master_public_dns" {
+  value       = aws_instance.jenkins.public_dns
+  description = "The public DNS name of the Jenkins master EC2 instance"
+}
+
+output "jenkins_url" {
+  value       = "http://${aws_instance.jenkins.public_ip}:8080"
+  description = "The URL to access the Jenkins web UI"
+}
+
+output "jenkins_ssh_command" {
+  value       = "ssh -i ${var.key_name}.pem ubuntu@${aws_instance.jenkins.public_ip}"
+  description = "SSH command to connect to the Jenkins master EC2 instance"
 }
 
 # Output for the AWS region
@@ -76,4 +103,12 @@ output "jenkins_node_public_ips" {
 output "jenkins_node_private_ips" {
   value       = var.create_jenkins_node ? aws_instance.jenkins_node[*].private_ip : []
   description = "The private IPs of the Jenkins node EC2 instances (if created)"
+}
+
+output "jenkins_nodes_ssh_commands" {
+  value = var.create_jenkins_node ? [
+    for i, ip in(var.create_jenkins_node ? aws_instance.jenkins_node[*].public_ip : []) :
+    "ssh -i ${var.key_name}.pem ${var.use_aws_linux_ami ? "ec2-user" : "ubuntu"}@${ip}"
+  ] : []
+  description = "SSH commands to connect to the Jenkins node EC2 instances (if created)"
 }
