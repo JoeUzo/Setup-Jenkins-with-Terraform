@@ -20,7 +20,10 @@ resource "aws_instance" "jenkins" {
   security_groups             = [aws_security_group.jenkins-sg.id]
   iam_instance_profile        = var.jenkins_master_iam_role_name != "" ? aws_iam_instance_profile.jenkins_master_profile[0].name : null
 
-  user_data = file("scripts/install_jenkins.sh")
+  user_data = <<EOF
+    ${file("scripts/install_jenkins.sh")}
+    ${file("scripts/setup_update_jenkins_ip.sh")}
+  EOF
 
   tags = {
     Name = var.my_ec2_name
@@ -43,7 +46,7 @@ resource "aws_instance" "jenkins_node" {
   ami = var.use_aws_linux_ami ? data.aws_ami.amazon_linux_2.id : (
     var.jenkins_node_ami != "" ? var.jenkins_node_ami : data.aws_ami.ubuntu_ami.id
   )
-  
+
   associate_public_ip_address = var.associate_pub_ip_address
   subnet_id                   = module.vpc_module.public_subnets[0]
   instance_type               = var.jenkins_node_instance_type

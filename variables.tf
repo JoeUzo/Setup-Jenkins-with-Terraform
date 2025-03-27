@@ -44,7 +44,7 @@ variable "jenkins_node_count" {
 variable "jenkins_node_instance_type" {
   description = "The instance type for the Jenkins node/slave"
   type        = string
-  default     = "t3.large"  # Suitable for running Terraform and AWS CLI
+  default     = "t3.large" # Suitable for running Terraform and AWS CLI
 }
 
 variable "jenkins_node_name" {
@@ -56,7 +56,7 @@ variable "jenkins_node_name" {
 variable "jenkins_node_ami" {
   description = "The AMI ID for the Jenkins node/slave (if not specified, will use the same as the master)"
   type        = string
-  default     = ""  # Empty means use the same AMI as the Jenkins master
+  default     = "" # Empty means use the same AMI as the Jenkins master
 }
 
 variable "use_aws_linux_ami" {
