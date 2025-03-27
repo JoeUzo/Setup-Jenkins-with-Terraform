@@ -20,10 +20,8 @@ resource "aws_instance" "jenkins" {
   security_groups             = [aws_security_group.jenkins-sg.id]
   iam_instance_profile        = var.jenkins_master_iam_role_name != "" ? aws_iam_instance_profile.jenkins_master_profile[0].name : null
 
-  user_data = <<EOF
-    ${file("scripts/install_jenkins.sh")}
-    ${file("scripts/setup_update_jenkins_ip.sh")}
-  EOF
+
+  user_data = local.combined_userdata
 
   tags = {
     Name = var.my_ec2_name

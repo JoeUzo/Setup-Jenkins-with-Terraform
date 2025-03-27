@@ -1,3 +1,11 @@
+locals {
+  combined_userdata = <<-EOF
+    #!/bin/bash
+    ${file("scripts/install_jenkins.sh")}
+    ${file("scripts/setup_update_jenkins_ip.sh")}
+  EOF
+}
+
 variable "my_region" {
   type    = string
   default = "us-east-1"
