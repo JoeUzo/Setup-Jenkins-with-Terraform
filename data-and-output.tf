@@ -36,10 +36,20 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
+# Get all instance IDs for output
+locals {
+  all_instance_ids = var.create_jenkins_node ? concat([aws_instance.jenkins.id], aws_instance.jenkins_node[*].id) : [aws_instance.jenkins.id]
+}
 
 ############################################
 # OUTPUTS
 ############################################
+
+# Combined output for all instance IDs (for compatibility with existing scripts)
+output "instance_id" {
+  value       = local.all_instance_ids
+  description = "The IDs of all Jenkins instances (master and nodes) for use with start/stop scripts"
+}
 
 # Jenkins Master Outputs
 output "jenkins_master_id" {
