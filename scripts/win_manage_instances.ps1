@@ -4,6 +4,7 @@ $jsonData = Get-Content -Raw -Path ".\output.json" | ConvertFrom-Json
 # Extract instance IDs and region from the JSON
 $instanceIds = $jsonData.instance_ids.value
 $region = $jsonData.region.value
+Write-Host "the region is $region"
 
 # Action: "start" or "stop"
 $action = $args[0]

@@ -37,8 +37,14 @@ systemctl enable docker
 systemctl start docker
 usermod -aG docker ec2-user
 
-# Install Java (required for Jenkins agent)
-amazon-linux-extras install java-openjdk11 -y
+# Install the latest Java (required for Jenkins agent)
+# Amazon Linux 2 doesn't have Java 21 in the standard repos, so we'll use Amazon Corretto
+yum install -y java-21-amazon-corretto
+# Fallback to Java 17 if 21 is not available
+if [ $? -ne 0 ]; then
+    echo "Java 21 not available, installing Java 17..."
+    yum install -y java-17-amazon-corretto
+fi
 
 # Create Jenkins agent directory
 mkdir -p /home/ec2-user/jenkins-agent
@@ -57,4 +63,6 @@ alias tfd='terraform destroy'
 alias tfi='terraform init'
 EOF
 
-echo "Terraform, AWS CLI, Helm, and Jenkins agent setup completed!" 
+# Display Java version
+java_version=$(java -version 2>&1 | head -1)
+echo "Terraform, AWS CLI, Helm, and Jenkins agent setup completed with $java_version!" 

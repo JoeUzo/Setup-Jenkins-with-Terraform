@@ -42,8 +42,11 @@ rm get-docker.sh
 mkdir -p /home/ubuntu/jenkins-agent
 chown -R ubuntu:ubuntu /home/ubuntu/jenkins-agent
 
-# Install Java (required for Jenkins agent)
-apt-get install -y openjdk-11-jdk
+# Install Java 21 (required for Jenkins agent)
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-21-jre
 
 # Create a directory for Terraform projects
 mkdir -p /home/ubuntu/terraform-projects
@@ -58,4 +61,4 @@ alias tfd='terraform destroy'
 alias tfi='terraform init'
 EOF
 
-echo "Terraform, AWS CLI, Helm, and Jenkins agent setup completed!" 
+echo "Terraform, AWS CLI, Helm, and Jenkins agent setup completed with Java 21!" 

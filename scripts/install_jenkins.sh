@@ -9,7 +9,7 @@
 #   2. Download and store the Jenkins repository key.
 #   3. Add the Jenkins repository to the system's sources list.
 #   4. Refresh package lists to include the Jenkins repository.
-#   5. Install required packages: fontconfig, OpenJDK 17 Runtime, and Jenkins.
+#   5. Install required packages: fontconfig, OpenJDK 21 Runtime, and Jenkins.
 #   6. Enable and start the Jenkins service.
 #
 # IMPORTANT:
@@ -42,8 +42,12 @@ apt-get update
 #    a) fontconfig: A dependency required by Jenkins.
 apt-get install fontconfig -y
 
-#    b) OpenJDK 17 JRE: Jenkins requires Java to run.
-apt-get install openjdk-17-jre -y
+#    b) OpenJDK 21 JRE: Jenkins requires Java to run.
+#       Using the latest LTS version for better performance and security.
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-21-jre
 
 #    c) Jenkins: The Continuous Integration server.
 apt-get install jenkins -y
@@ -53,5 +57,6 @@ apt-get install jenkins -y
 systemctl enable jenkins
 systemctl start jenkins
 
+echo "Jenkins installation completed with Java 21"
 # End of Script
 # Jenkins is now installed and the service is running.
