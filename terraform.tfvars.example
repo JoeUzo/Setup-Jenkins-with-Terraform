@@ -15,6 +15,12 @@ jenkins_node_name          = "Jenkins-Node"
 use_aws_linux_ami          = false  # Set to true to use Amazon Linux 2 instead of Ubuntu
 install_terraform_aws      = true   # Set to true to install Terraform and AWS CLI
 
+# EKS IAM Role Configuration
+create_eks_iam_role       = true    # Set to true to create a new IAM role for EKS management
+existing_eks_iam_role_name = ""     # Name of an existing role to use if not creating a new one
+personal_aws_account_id   = "123456789012"  # Your personal AWS account ID
+personal_user_name        = "your-username" # Your personal IAM user name
+
 # VPC
 vpc_owner              = "YourName"
 vpc_use                = "Jenkins"

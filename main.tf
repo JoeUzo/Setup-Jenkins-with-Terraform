@@ -20,7 +20,6 @@ resource "aws_instance" "jenkins" {
   security_groups             = [aws_security_group.jenkins-sg.id]
   iam_instance_profile        = var.jenkins_master_iam_role_name != "" ? aws_iam_instance_profile.jenkins_master_profile[0].name : null
 
-
   user_data = local.combined_userdata
 
   tags = {
@@ -44,13 +43,23 @@ resource "aws_instance" "jenkins_node" {
   ami = var.use_aws_linux_ami ? data.aws_ami.amazon_linux_2.id : (
     var.jenkins_node_ami != "" ? var.jenkins_node_ami : data.aws_ami.ubuntu_ami.id
   )
-
+  
   associate_public_ip_address = var.associate_pub_ip_address
   subnet_id                   = module.vpc_module.public_subnets[0]
   instance_type               = var.jenkins_node_instance_type
   key_name                    = var.key_name
   security_groups             = [aws_security_group.jenkins-sg.id]
-  iam_instance_profile        = var.jenkins_node_iam_role_name != "" ? aws_iam_instance_profile.jenkins_node_profile[0].name : null
+  
+  # IAM instance profile selection logic:
+  # 1. If we're creating a new EKS role, use that
+  # 2. Otherwise, if a specific jenkins_node_iam_role_name is provided, use that
+  # 3. Otherwise, if an existing_eks_iam_role_name is provided, use the corresponding profile
+  # 4. Otherwise, use no role
+  iam_instance_profile = var.create_eks_iam_role ? aws_iam_instance_profile.eks_profile[0].name : (
+    var.jenkins_node_iam_role_name != "" ? aws_iam_instance_profile.jenkins_node_profile[0].name : (
+      var.existing_eks_iam_role_name != "" ? "eks-management-profile" : null
+    )
+  )
 
   # Use the appropriate installation script based on the AMI
   user_data = var.install_terraform_aws ? (
