@@ -46,7 +46,7 @@ locals {
 ############################################
 
 # Combined output for all instance IDs (for compatibility with existing scripts)
-output "instance_id" {
+output "instance_ids" {
   value       = local.all_instance_ids
   description = "The IDs of all Jenkins instances (master and nodes) for use with start/stop scripts"
 }
