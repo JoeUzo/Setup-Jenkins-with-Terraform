@@ -20,6 +20,7 @@ create_eks_iam_role       = true    # Set to true to create a new IAM role for E
 existing_eks_iam_role_name = ""     # Name of an existing role to use if not creating a new one
 personal_aws_account_id   = "123456789012"  # Your personal AWS account ID
 personal_user_name        = "your-username" # Your personal IAM user name
+enable_full_s3_access     = false   # Set to true for full S3 access (not just Terraform state buckets)
 
 # VPC
 vpc_owner              = "YourName"

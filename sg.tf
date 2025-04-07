@@ -9,6 +9,8 @@ resource "aws_security_group" "jenkins-sg" {
       { from = 22, to = 22, description = "Allow Port 22" },
       { from = 8080, to = 8080, description = "Allow Port 8080" },
       { from = 50000, to = 50000, description = "Allow Port 50000" },
+      { from = 25, to = 25, description = "Allow Port 25 (SMTP)" },
+      { from = 465, to = 465, description = "Allow Port 465 (SMTPS)" },
     ]
     content {
       from_port   = ingress.value.from
