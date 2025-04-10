@@ -1,15 +1,18 @@
 # Jenkins on AWS with Terraform
 
-This Terraform configuration creates a Jenkins server on AWS EC2 with optional node/agent instances. The setup includes a custom VPC, security groups, and optional IAM roles.
+This Terraform configuration creates a Jenkins server on AWS EC2 with optional node/agent instances. The setup includes a custom VPC, security groups, and IAM roles for managing EKS clusters and Terraform state.
 
 ## Features
 
 - **Jenkins Master Server**: Automatically installs and configures Jenkins on an Ubuntu EC2 instance
 - **Optional Jenkins Nodes**: Create multiple Jenkins agent nodes to distribute build jobs
 - **Custom VPC Setup**: Creates a VPC with public and private subnets
-- **IAM Role Integration**: Use existing IAM roles for your instances
+- **EKS IAM Role**: Dedicated IAM role for Jenkins nodes to manage EKS clusters
+- **S3 and DynamoDB Access**: IAM permissions for using Terraform state backends
+- **IAM Role Integration**: Use existing IAM roles or create new ones
 - **Multiple OS Options**: Choose between Ubuntu or Amazon Linux 2 for the nodes
 - **EKS Management Tools**: Nodes come pre-installed with Terraform, AWS CLI, kubectl, Helm, and other tools for managing EKS clusters
+- **Email Notifications**: Security group configured for SMTP(25) and SMTPS(465) for email alerts
 
 ## Prerequisites
 
@@ -41,6 +44,13 @@ jenkins_node_instance_type = "t3.large"
 jenkins_node_name          = "Jenkins-Node"
 use_aws_linux_ami          = false  # Set to true to use Amazon Linux 2 instead of Ubuntu
 install_terraform_aws      = true   # Set to true to install Terraform, AWS CLI, Helm, etc.
+
+# EKS IAM Role Configuration
+create_eks_iam_role       = true    # Set to true to create a new IAM role for EKS management
+existing_eks_iam_role_name = ""     # Name of an existing role to use if not creating a new one
+personal_aws_account_id   = "123456789012"  # Your personal AWS account ID
+personal_user_name        = "your-username" # Your personal IAM user name
+enable_full_s3_access     = false   # Set to true for full S3 access (not just Terraform state buckets)
 
 # VPC
 vpc_owner              = "YourName"
@@ -102,21 +112,58 @@ The Jenkins nodes come pre-installed with the following tools:
 - **Helm**: For Kubernetes package management
 - **eksctl**: For EKS-specific operations
 
-To create an EKS cluster using Terraform:
+### EKS IAM Role Features
 
-1. SSH into one of the Jenkins nodes
-2. Create a Terraform configuration for your EKS cluster
-3. Run the standard Terraform workflow (init, plan, apply)
-4. Use `aws eks update-kubeconfig` to configure kubectl to interact with your cluster
+This configuration includes a dedicated IAM role for EKS management that provides:
+
+1. **Dual Trust Policy**: Allows both Jenkins EC2 instances and your personal IAM user to assume the role
+2. **EKS Management Permissions**: Includes AWS managed policies for EKS cluster and worker node management
+3. **S3 and DynamoDB Access**: Permissions for Terraform backend state management
+4. **Flexible Configuration**: Options to create a new role or use an existing one
+
+### Using the EKS Role from Your Personal Account
+
+To assume the EKS role from your personal AWS account:
+
+```bash
+aws sts assume-role --role-arn arn:aws:iam::ACCOUNT_ID:role/eks-management-role --role-session-name eks-session
+```
+
+### Using Terraform with S3 Backend
+
+The EKS role includes permissions for Terraform to use S3 backends. Example configuration:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "your-terraform-state-bucket"
+    key            = "your-project/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-lock-table"
+  }
+}
+```
+
+### Service Limits and EKS
+
+When creating EKS clusters, be aware of your AWS account's service limits, particularly vCPU limits. If you encounter `VcpuLimitExceeded` errors, you'll need to request a limit increase through AWS Service Quotas.
 
 ## Customization
 
 ### IAM Roles
 
-This configuration doesn't create IAM roles but allows you to attach existing roles:
+You have several options for IAM roles:
 
-1. Create IAM roles in AWS with the permissions you need
-2. Specify the role names in your `terraform.tfvars` file
+1. **Create a new EKS IAM role**: Set `create_eks_iam_role = true`
+2. **Use an existing EKS role**: Set `create_eks_iam_role = false` and provide `existing_eks_iam_role_name`
+3. **Use existing Jenkins roles**: Provide `jenkins_master_iam_role_name` and/or `jenkins_node_iam_role_name`
+
+### S3 Access Options
+
+For S3 access, you can choose between:
+
+1. **Limited S3 access for Terraform state**: Default option (`enable_full_s3_access = false`)
+2. **Full S3 access**: Set `enable_full_s3_access = true` to attach the AmazonS3FullAccess policy
 
 ### Multiple Nodes
 
@@ -141,10 +188,17 @@ After running `terraform apply`, you'll see outputs including:
 - SSH commands to connect to all instances
 - Jenkins nodes details (if created)
 - IAM instance profile information (if applicable)
+- EKS management role name and ARN (if created)
 
 ## Security Considerations
 
-- The security group allows traffic on ports 22 (SSH), 80 (HTTP), 8080 (Jenkins), and 50000 (Jenkins agents)
+- The security group allows traffic on ports:
+  - 22 (SSH): For remote access
+  - 80 (HTTP): For web access
+  - 465 (SMTPS): For secure email notifications
+  - 25 (SMTP): For email notifications
+  - 8080 (Jenkins): For Jenkins web interface
+  - 50000 (Jenkins agents): For Jenkins agent connections
 - For production use, consider restricting these ports to specific IPs
 - Use IAM roles with the principle of least privilege
 - Regularly update the instances and Jenkins for security patches
